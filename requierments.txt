@@ -5,3 +5,4 @@ Pillow
 python-decouple
 python-slugify
 django-filter
+requests
