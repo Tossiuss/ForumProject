@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 # Create your views here.
 
 class CategoryView(generics.ListCreateAPIView):
-    queryset = Category.objects.all()
+    queryset = Teams.objects.all()
     serializer_class = CategorySerializer
 
 class TagView(generics.ListCreateAPIView):
@@ -39,18 +39,15 @@ class PostView(viewsets.ModelViewSet):
         rating = Rating.objects.filter(author=request.user, post=pk).first()
         if serializer.is_valid(raise_exception=True):
             if rating and request.method == 'POST':
-                # print('===================')
                 return Response(
                     'Rating objact exists', status=200
                 )
             elif rating and request.method == 'PATCH':
-                # print('____________')
                 serializer.update(rating, serializer.validated_data)
                 return Response(
                     'ok', status=200
                 )
             elif request.method == 'POST':
-                print('-----------------')
                 serializer.create(serializer.validated_data)
                 return Response(
                     data='ok', status=201
