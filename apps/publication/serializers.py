@@ -8,7 +8,7 @@ from django.db.models import Avg
 class CategorySerializer(ModelSerializer):
 
     class Meta:
-        model = Category
+        model = Teams
         fields = ('title',)
 
 

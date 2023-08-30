@@ -7,7 +7,7 @@ from slugify import slugify
 
 User = get_user_model()
 
-class Category(models.Model):
+class Teams(models.Model):
     title = models.CharField(max_length=30)
     slug = models.SlugField(max_length=30, primary_key=True)
 
@@ -37,7 +37,7 @@ class Posts(models.Model):
     slug = models.SlugField(max_length=25, primary_key=True, blank=True)
     texts = models.TextField()
     image = models.ImageField(upload_to='posts_img/', blank=True, verbose_name='Pictures')
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='posts', verbose_name='Category')
+    category = models.ForeignKey(Teams, on_delete=models.PROTECT, related_name='posts', verbose_name='Category')
     tags = models.ManyToManyField(Tag, related_name='posts', blank=True)
     crated_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
