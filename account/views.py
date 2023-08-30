@@ -74,7 +74,7 @@ class LosePasswordView(APIView):
         )
         if serializer.is_valid(raise_exception=True):
             user = User.objects.get(email=serializer.validated_data['email'])
-            serializer.send_password(user)
+            serializer.set_new_password()
             return Response(
                 'Пароль успешно отправлен на почту', status=200
             )

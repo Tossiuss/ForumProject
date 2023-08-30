@@ -133,6 +133,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 class LosePasswordSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
+    new_password = serializers.CharField(min_length=4, required=True)
 
     def validate_email(self, email):
         if not User.objects.filter(email=email).exists():
@@ -141,14 +142,22 @@ class LosePasswordSerializer(serializers.Serializer):
             )
         return email
 
-    def create(self, validated_data):
-        user = User.objects.get(email=validated_data['email'])
-        self.send_password(user)  # Передаем экземпляр пользователя
-        return user
 
+    def set_new_password(self):
+        new_passwords = self.validated_data.get('new_password')
+        user = self.context.get('request').user
+        user.set_password(new_passwords)
+        user.save()
+    #
+    # def create(self, validated_data):
+    #     user = User.objects.get(email=validated_data['email'])
+    #     self.send_password(user)  # Передаем экземпляр пользователя
+    #     return user
+    #
+    #
+    # def send_password(self, user):
+    #     send_password(user.email, user.password)
+    #     # Здесь вы можете реализовать отправку пароля
+    #     # Например, отправить его на почту пользователя
+    #     print(f"Sending password to {user.email}:", user.password)
 
-    def send_password(self, user):
-        send_password(user.email, user.password)
-        # Здесь вы можете реализовать отправку пароля
-        # Например, отправить его на почту пользователя
-        print(f"Sending password to {user.email}:", user.password)
