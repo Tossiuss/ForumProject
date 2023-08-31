@@ -37,21 +37,21 @@ class PostView(viewsets.ModelViewSet):
         data['post'] = pk
         serializer = RatingSerializer(data=data, context={'request': request})
         rating = Rating.objects.filter(author=request.user, post=pk).first()
-        if serializer.is_valid(raise_exception=True):
-            if rating and request.method == 'POST':
-                return Response(
-                    'Rating objact exists', status=200
-                )
-            elif rating and request.method == 'PATCH':
-                serializer.update(rating, serializer.validated_data)
-                return Response(
-                    'ok', status=200
-                )
-            elif request.method == 'POST':
-                serializer.create(serializer.validated_data)
-                return Response(
-                    data='ok', status=201
-                )
+        serializer.is_valid(raise_exception=True)
+        if rating and request.method == 'POST':
+            return Response(
+                'Rating object exists', status=200
+            )
+        elif rating and request.method == 'PATCH':
+            serializer.update(rating, serializer.validated_data)
+            return Response(
+                'ok', status=200
+            )
+        elif request.method == 'POST':
+            serializer.create(serializer.validated_data)
+            return Response(
+                data='ok', status=201
+            )
 
 
     @action(['POST'], detail=True)

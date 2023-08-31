@@ -39,6 +39,9 @@ class RegistrationSerializer(serializers.Serializer):
         user.create_activation_code()
         send_activation_code(user.email, user.activation_code)        
         return user
+    
+    def to_representation(self, instance):
+        return {"message": "Аккаунт успешно создан"}
 
 
 class ActivationSerializer(serializers.Serializer):
@@ -55,12 +58,15 @@ class ActivationSerializer(serializers.Serializer):
         return attrs
     
     
-    def activate(self):
-        email = self.validated_data.get('email')
-        user = User.objects.get(email=email)
+    def create(self, validated_data):
+        user = User.objects.get(email=validated_data.get('email'))
         user.is_active = True
         user.activation_code = ''
         user.save()
+        return user
+    
+    def to_representation(self, instance):
+        return {"message": "Аккаунт активирован"}
 
 
 class LoginSerializer(serializers.Serializer):
@@ -125,15 +131,14 @@ class ChangePasswordSerializer(serializers.Serializer):
         return attrs
     
     def set_new_password(self):
-        new_passwords = self.validated_data.get('new_password')
+        new_password = self.validated_data.get('new_password')
         user = self.context.get('request').user
-        user.set_password(new_passwords)
+        user.set_password(new_password)
         user.save()
 
 
 class LosePasswordSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
-    new_password = serializers.CharField(min_length=4, required=True)
 
     def validate_email(self, email):
         if not User.objects.filter(email=email).exists():
@@ -141,23 +146,33 @@ class LosePasswordSerializer(serializers.Serializer):
                 'Пользователь не найден'
             )
         return email
+    
+    def unactivvate_user(self):
+        user = User.objects.get(email=self.validated_data.get("email"))
+        user.is_staff = False
+        user.create_activation_code()
+
+    def to_representation(self, instance):
+        return {"message": "Проверьте почту"}
 
 
-    def set_new_password(self):
-        new_passwords = self.validated_data.get('new_password')
-        user = self.context.get('request').user
-        user.set_password(new_passwords)
+class LosePasswordCompleteSerializer(serializers.Serializer):
+    activation_code = serializers.CharField(required=True)
+    new_password = serializers.CharField(min_length=4, required=True)
+
+    def validate_activation_code(self, activation_code):
+        user = User.objects.filter(activation_code=activation_code, is_staff=False)
+        if not user.exists():
+            raise serializers.ValidationError('Пользователь не найден')
+        return activation_code
+    
+    def save(self, **kwargs):
+        user = User.objects.get(activation_code=self.validated_data.get('activation_code'), is_staff=False)
+        user.is_staff = True
+        user.activation_code = ''
+        user.set_password(self.validated_data.get('new_password'))
         user.save()
-    #
-    # def create(self, validated_data):
-    #     user = User.objects.get(email=validated_data['email'])
-    #     self.send_password(user)  # Передаем экземпляр пользователя
-    #     return user
-    #
-    #
-    # def send_password(self, user):
-    #     send_password(user.email, user.password)
-    #     # Здесь вы можете реализовать отправку пароля
-    #     # Например, отправить его на почту пользователя
-    #     print(f"Sending password to {user.email}:", user.password)
+        return user
 
+    def to_representation(self, instance):
+        return {"message": "Ваш пароль обновлен"}

@@ -16,10 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+
+# swagger schema
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Python 23 API",
+        description="makers bootcamp",
+        default_version="v1",
+    ),
+    public=True
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('account.urls')),
+    path('api/v1/account/', include('account.urls')),
     path('api/v1/', include('apps.publication.urls')),
+    path('api/v1/', include('apps.review.urls')),
+    path('api/v1/docs/', schema_view.with_ui("swagger")),
 ]
 

@@ -6,3 +6,4 @@ python-decouple
 python-slugify
 django-filter
 requests
+drf-yasg

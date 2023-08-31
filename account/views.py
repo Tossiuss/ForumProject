@@ -1,6 +1,14 @@
 from rest_framework.views import APIView
+from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
-from .serializers import RegistrationSerializer, ActivationSerializer, LoginSerializer, ChangePasswordSerializer, LosePasswordSerializer
+from .serializers import (
+    RegistrationSerializer, 
+    ActivationSerializer, 
+    LoginSerializer, 
+    ChangePasswordSerializer, 
+    LosePasswordSerializer,
+    LosePasswordCompleteSerializer
+)
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -11,28 +19,12 @@ from rest_framework.permissions import IsAuthenticated
 User = get_user_model()
 
 
-class RegistrationView(APIView):
+class RegistrationView(CreateAPIView):
+    serializer_class = RegistrationSerializer
 
-    def post(self, request):
-        serializer = RegistrationSerializer(
-            data=request.data
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response('Аккаунт успешно создан', status=201)
-    
 
-class ActivationView(APIView):
-
-    def post(self, request):
-        serializer = ActivationSerializer(
-            data=request.data
-        )
-        if serializer.is_valid(raise_exception=True):
-            serializer.activate()
-            return Response(
-                'fevcsdf'
-            )
+class ActivationView(CreateAPIView):
+    serializer_class = ActivationSerializer
 
 
 class LoginView(ObtainAuthToken):
@@ -58,23 +50,14 @@ class ChangePasswordView(APIView):
             data=request.data,
             context={'request': request}
         )
-        if serializer.is_valid(raise_exception=True):
-            serializer.set_new_password()
-            return Response(
-                'Пароль успешно обнавлен', status=200
-            )
-
-class LosePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = LosePasswordSerializer(
-            data=request.data,
-            context={'request': request}
+        serializer.is_valid(raise_exception=True)
+        serializer.set_new_password()
+        return Response(
+            'Пароль успешно обнавлен', status=200
         )
-        if serializer.is_valid(raise_exception=True):
-            user = User.objects.get(email=serializer.validated_data['email'])
-            serializer.set_new_password()
-            return Response(
-                'Пароль успешно отправлен на почту', status=200
-            )
+
+class LosePasswordView(CreateAPIView):
+    serializer_class = LosePasswordSerializer
+
+class LosePasswordCompleteView(CreateAPIView):
+    serializer_class = LosePasswordCompleteSerializer

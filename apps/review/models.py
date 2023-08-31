@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
 from apps.publication.models import Posts
 
 # Create your models here.
@@ -57,7 +58,7 @@ class Rating(models.Model):
         related_name='ratings',
         verbose_name='Пост'
     )
-    rating = models.PositiveSmallIntegerField()
+    rating = models.PositiveSmallIntegerField(validators=[MaxValueValidator(10)])
 
     def __str__(self):
         return f'{self.rating} -> {self.post.title}'
